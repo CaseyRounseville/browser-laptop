@@ -416,7 +416,11 @@ module.exports.cleanAppData = (immutableData, isShutdown) => {
 
   if (isShutdown) {
     const status = ledgerState.getPromotionProp(immutableData, 'promotionStatus')
-    if (status === promotionStatuses.CAPTCHA_CHECK || status === promotionStatuses.CAPTCHA_ERROR) {
+    if (
+      status === promotionStatuses.CAPTCHA_CHECK ||
+      status === promotionStatuses.CAPTCHA_BLOCK ||
+      status === promotionStatuses.CAPTCHA_ERROR
+    ) {
       immutableData = ledgerState.setPromotionProp(immutableData, 'promotionStatus', null)
     }
   }
@@ -851,7 +855,7 @@ module.exports.runPreMigrations = (data) => {
     if (process.platform === 'darwin' && (compareVersions(data.lastAppVersion, '0.22.13') === 0 || data.quarantineNeeded)) {
       const unQuarantine = (appPath) => {
         try {
-          execSync(`xattr -d com.apple.quarantine "${appPath}"`)
+          execSync(`xattr -d com.apple.quarantine "${appPath}" || true`)
           console.log(`Quarantine attribute has been removed from ${appPath}`)
         } catch (e) {
           console.error(`Failed to remove quarantine attribute from ${appPath}: `, e)
